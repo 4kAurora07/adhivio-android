@@ -4,6 +4,9 @@ import { Reminder } from '@/types/reminder';
 
 const STORAGE_KEY = 'reminders_data';
 
+// ----------------------------------------
+// LOAD FROM STORAGE
+// ----------------------------------------
 function loadReminders(): Reminder[] {
   try {
     const data = localStorage.getItem(STORAGE_KEY);
@@ -13,6 +16,9 @@ function loadReminders(): Reminder[] {
   }
 }
 
+// ----------------------------------------
+// SAVE TO STORAGE
+// ----------------------------------------
 function saveReminders(reminders: Reminder[]) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(reminders));
@@ -22,53 +28,137 @@ function saveReminders(reminders: Reminder[]) {
 }
 
 export function useReminders() {
+
   const [reminders, setReminders] = useState<Reminder[]>(loadReminders);
 
+  // Persist changes
   useEffect(() => {
     saveReminders(reminders);
   }, [reminders]);
 
-  const addReminder = useCallback((data: Omit<Reminder, 'id' | 'completed' | 'notified'>) => {
-    const reminder: Reminder = { ...data, id: uuidv4(), completed: false, notified: false };
-    setReminders(prev => [reminder, ...prev]);
-    return reminder;
-  }, []);
+  // ----------------------------------------
+  // ADD REMINDER
+  // ----------------------------------------
+  const addReminder = useCallback(
+    (data: Omit<Reminder, 'id' | 'completed' | 'notified'>) => {
 
-  const updateReminder = useCallback((id: string, data: Partial<Reminder>) => {
-    setReminders(prev => prev.map(r => r.id === id ? { ...r, ...data } : r));
-  }, []);
+      const reminder: Reminder = {
+        ...data,
+        id: uuidv4(),
+        completed: false,
+        notified: false,
+        snoozedUntil: undefined
+      };
 
+      setReminders(prev => [reminder, ...prev]);
+      return reminder;
+    },
+    []
+  );
+
+  // ----------------------------------------
+  // PARTIAL UPDATE (used by UI)
+  // ----------------------------------------
+  const updateReminder = useCallback(
+    (id: string, data: Partial<Reminder>) => {
+      setReminders(prev =>
+        prev.map(r => (r.id === id ? { ...r, ...data } : r))
+      );
+    },
+    []
+  );
+
+  // ----------------------------------------
+  // FULL OBJECT UPDATE (🔥 used by notifications)
+  // ----------------------------------------
+  const replaceReminder = useCallback(
+    (updatedReminder: Reminder) => {
+      setReminders(prev =>
+        prev.map(r =>
+          r.id === updatedReminder.id ? updatedReminder : r
+        )
+      );
+    },
+    []
+  );
+
+  // ----------------------------------------
+  // DELETE
+  // ----------------------------------------
   const deleteReminder = useCallback((id: string) => {
     setReminders(prev => prev.filter(r => r.id !== id));
   }, []);
 
+  // ----------------------------------------
+  // COMPLETE
+  // ----------------------------------------
   const completeReminder = useCallback((id: string) => {
-    setReminders(prev => prev.map(r => r.id === id ? { ...r, completed: true } : r));
+    setReminders(prev =>
+      prev.map(r =>
+        r.id === id ? { ...r, completed: true } : r
+      )
+    );
   }, []);
 
+  // ----------------------------------------
+  // SNOOZE (local state only — scheduling handled elsewhere)
+  // ----------------------------------------
   const snoozeReminder = useCallback((id: string, minutes: number) => {
-    const snoozedUntil = new Date(Date.now() + minutes * 60 * 1000).toISOString();
-    setReminders(prev => prev.map(r => r.id === id ? { ...r, snoozedUntil, notified: false } : r));
+
+    const snoozedUntil = new Date(
+      Date.now() + minutes * 60 * 1000
+    ).toISOString();
+
+    setReminders(prev =>
+      prev.map(r =>
+        r.id === id
+          ? {
+              ...r,
+              snoozedUntil,
+              notified: false
+            }
+          : r
+      )
+    );
   }, []);
 
+  // ----------------------------------------
+  // MARK NOTIFIED (for "once" reminders)
+  // ----------------------------------------
   const markNotified = useCallback((id: string) => {
-    setReminders(prev => prev.map(r => r.id === id ? { ...r, notified: true } : r));
+    setReminders(prev =>
+      prev.map(r =>
+        r.id === id ? { ...r, notified: true } : r
+      )
+    );
   }, []);
 
+  // ----------------------------------------
+  // SORTED LISTS
+  // ----------------------------------------
   const activeReminders = reminders
     .filter(r => !r.completed)
-    .sort((a, b) => new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime());
+    .sort(
+      (a, b) =>
+        new Date(a.dateTime).getTime() -
+        new Date(b.dateTime).getTime()
+    );
 
   const completedReminders = reminders
     .filter(r => r.completed)
-    .sort((a, b) => new Date(b.dateTime).getTime() - new Date(a.dateTime).getTime());
+    .sort(
+      (a, b) =>
+        new Date(b.dateTime).getTime() -
+        new Date(a.dateTime).getTime()
+    );
 
   return {
     reminders,
     activeReminders,
     completedReminders,
     addReminder,
-    updateReminder,
+    updateReminder,     // partial updates
+    replaceReminder,    // 🔥 pass THIS to useNotifications
     deleteReminder,
     completeReminder,
     snoozeReminder,

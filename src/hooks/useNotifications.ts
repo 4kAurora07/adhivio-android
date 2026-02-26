@@ -1,113 +1,97 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect } from 'react';
+import { LocalNotifications } from '@capacitor/local-notifications';
 import { Reminder, AppSettings } from '@/types/reminder';
-import { useSounds } from './useSounds';
 
 export function useNotifications(
   reminders: Reminder[],
   settings: AppSettings,
   markNotified: (id: string) => void
 ) {
-  const { playBuiltIn, playCustom } = useSounds();
-  const intervalRef = useRef<ReturnType<typeof setInterval>>();
 
-  const requestPermission = useCallback(async () => {
-    try {
-      if ('Notification' in window && Notification.permission === 'default') {
-        await Notification.requestPermission();
-      }
-    } catch (e) {
-      console.warn('Failed to request notification permission', e);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (settings.notificationsEnabled) {
-      requestPermission();
-    }
-  }, [settings.notificationsEnabled, requestPermission]);
-
+  // Schedule reminders natively
   useEffect(() => {
     if (!settings.notificationsEnabled) return;
 
-    const check = () => {
-      const now = Date.now();
-      reminders.forEach(r => {
-        if (r.completed || r.notified) return;
+    const scheduleReminders = async () => {
 
-        const triggerTime = r.snoozedUntil
-          ? new Date(r.snoozedUntil).getTime()
-          : new Date(r.dateTime).getTime();
+      try {
+        const notifications = reminders
+          .filter(r => !r.completed && !r.notified)
+          .map(r => {
 
-        if (now >= triggerTime) {
-          try {
-            // Show notification
-            if ('Notification' in window && Notification.permission === 'granted') {
-              const notification = new Notification(r.title, {
-                body: r.description || `Reminder: ${r.title}`,
-                icon: '/pwa-192x192.png',
-                tag: r.id,
-              });
-              notification.onclick = () => {
-                window.focus();
-                notification.close();
-              };
+            const rawTime = r.snoozedUntil ? r.snoozedUntil : r.dateTime;
+
+            if (!rawTime) return null;
+
+            // Force safe ISO date parsing
+            const triggerDate = new Date(new Date(rawTime).toISOString());
+
+            // Validate date
+            if (isNaN(triggerDate.getTime())) {
+              console.warn("Invalid date for reminder:", r.title, rawTime);
+              return null;
             }
 
-            // Also try service worker notification for background support
-            if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-              navigator.serviceWorker.controller.postMessage({
-                type: 'SHOW_NOTIFICATION',
-                payload: {
-                  title: r.title,
-                  body: r.description || `Reminder: ${r.title}`,
-                  tag: r.id,
-                },
-              });
+            // Skip past reminders
+            if (triggerDate.getTime() <= Date.now()) {
+              console.log("Skipping past reminder:", r.title);
+              return null;
             }
 
-            // Play sound
-            if (r.sound === 'custom' && r.customSoundData) {
-              playCustom(r.customSoundData, settings.volume);
-            } else if (r.sound !== 'custom') {
-              playBuiltIn(r.sound, settings.volume);
-            }
-          } catch (e) {
-            console.warn('Notification error', e);
-          }
+            const numericId =
+              Number(r.id.replace(/\D/g, '').slice(0, 9)) ||
+              Math.floor(Math.random() * 100000000);
 
-          markNotified(r.id);
+            return {
+              id: numericId,
+              title: r.title,
+              body: r.description || `Reminder: ${r.title}`,
+              schedule: {
+                at: triggerDate,
+                allowWhileIdle: true,
+              },
+              sound: "reminder_sound"
+            };
+          })
+          .filter(Boolean) as any[];
+
+        if (notifications.length > 0) {
+          await LocalNotifications.schedule({
+            notifications
+          });
         }
-      });
+
+      } catch (err) {
+        console.error("Notification scheduling error:", err);
+      }
     };
 
-    intervalRef.current = setInterval(check, 5000);
-    check();
+    scheduleReminders();
+
+  }, [reminders, settings.notificationsEnabled]);
+
+  // Listener when notification is received
+  useEffect(() => {
+
+    let listenerHandle: any;
+
+    const setupListener = async () => {
+      listenerHandle = await LocalNotifications.addListener(
+        'localNotificationReceived',
+        notification => {
+          markNotified(String(notification.id));
+        }
+      );
+    };
+
+    setupListener();
 
     return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
+      if (listenerHandle) {
+        listenerHandle.remove();
+      }
     };
-  }, [reminders, settings, markNotified, playBuiltIn, playCustom]);
 
-  // Register reminders with service worker for background notifications
-  useEffect(() => {
-    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-      const pending = reminders
-        .filter(r => !r.completed && !r.notified)
-        .map(r => ({
-          id: r.id,
-          title: r.title,
-          body: r.description || `Reminder: ${r.title}`,
-          triggerTime: r.snoozedUntil
-            ? new Date(r.snoozedUntil).getTime()
-            : new Date(r.dateTime).getTime(),
-        }));
+  }, [markNotified]);
 
-      navigator.serviceWorker.controller.postMessage({
-        type: 'REGISTER_REMINDERS',
-        payload: pending,
-      });
-    }
-  }, [reminders]);
-
-  return { requestPermission };
 }
