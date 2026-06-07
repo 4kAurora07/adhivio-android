@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_bg"
+    android:orientation="vertical"
+    android:padding="12dp">
+
+    <!-- Header -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp">
+
+        <TextView
+            android:id="@+id/widget_header_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Adhivio"
+            android:textColor="#FFFFFF"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true" />
+
+        <TextView
+            android:id="@+id/widget_header_subtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Upcoming"
+            android:textColor="#6366F1"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true" />
+    </RelativeLayout>
+
+    <!-- Empty State -->
+    <TextView
+        android:id="@+id/widget_empty_text"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:text="No upcoming reminders"
+        android:textColor="#888C9E"
+        android:textSize="12sp"
+        android:visibility="gone" />
+
+    <!-- Reminders List -->
+    <LinearLayout
+        android:id="@+id/widget_list_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center_vertical">
+
+        <!-- Row 1 -->
+        <LinearLayout
+            android:id="@+id/widget_row_1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?android:attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:orientation="horizontal"
+            android:paddingVertical="4dp">
+
+            <TextView
+                android:id="@+id/widget_title_1"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="Upcoming alarm 1"
+                android:textColor="#E1E3EB"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/widget_time_1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#6366F1"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:text="10:00 AM"
+                android:layout_marginLeft="6dp" />
+        </LinearLayout>
+
+        <!-- Divider 1 -->
+        <View
+            android:id="@+id/widget_divider_1"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#222533"
+            android:layout_marginVertical="2dp" />
+
+        <!-- Row 2 -->
+        <LinearLayout
+            android:id="@+id/widget_row_2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?android:attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:orientation="horizontal"
+            android:paddingVertical="4dp">
+
+            <TextView
+                android:id="@+id/widget_title_2"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="Upcoming alarm 2"
+                android:textColor="#E1E3EB"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/widget_time_2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#6366F1"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:text="02:30 PM"
+                android:layout_marginLeft="6dp" />
+        </LinearLayout>
+
+        <!-- Divider 2 -->
+        <View
+            android:id="@+id/widget_divider_2"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#222533"
+            android:layout_marginVertical="2dp" />
+
+        <!-- Row 3 -->
+        <LinearLayout
+            android:id="@+id/widget_row_3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?android:attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:orientation="horizontal"
+            android:paddingVertical="4dp">
+
+            <TextView
+                android:id="@+id/widget_title_3"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="Upcoming alarm 3"
+                android:textColor="#E1E3EB"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/widget_time_3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#6366F1"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:text="08:00 PM"
+                android:layout_marginLeft="6dp" />
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

@@ -1,7 +1,82 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         NOTIFICATION PERMISSIONS
+         All permissions must be declared here. Android ignores any that are
+         missing — it will NOT warn you at runtime, it will just silently
+         fail to schedule or display notifications.
+         ══════════════════════════════════════════════════════════════════════ -->
+
+    <!--
+        POST_NOTIFICATIONS — Android 13+ (API 33+)
+        Required to display ANY notification on Android 13 and above.
+        On Android 12 and below this permission is auto-granted at install.
+        Without it, LocalNotifications.schedule() calls are silently dropped
+        on Android 13+ devices. The runtime dialog is shown automatically
+        when LocalNotifications.requestPermissions() is called.
+    -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!--
+        SCHEDULE_EXACT_ALARM — Android 12+ (API 31+)
+        Required for AlarmManager.setExactAndAllowWhileIdle(), which is what
+        Capacitor's LocalNotifications plugin uses under the hood.
+        Without this, `allowWhileIdle: true` has no effect — reminders will
+        drift significantly or never fire during Doze mode.
+        On Android 12+, the user must also grant "Alarms & Reminders" access
+        under Settings → Apps → [App] → Special app access.
+    -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+
+    <!--
+        USE_EXACT_ALARM — Android 13+ (API 33+)
+        Alternative to SCHEDULE_EXACT_ALARM for alarm-clock / reminder apps.
+        Unlike SCHEDULE_EXACT_ALARM, this does NOT require the user to grant
+        special app access — it is auto-approved for apps with a clear
+        alarm/reminder purpose. Include BOTH for maximum compatibility.
+    -->
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+
+    <!--
+        RECEIVE_BOOT_COMPLETED
+        Allows the Capacitor LocalNotificationRestoreReceiver BroadcastReceiver
+        to be woken up after the device reboots.
+        Without this, ALL scheduled alarms are permanently lost on reboot
+        because AlarmManager does not survive power cycles.
+        Capacitor re-registers all stored alarms automatically on boot —
+        but only if this permission is present.
+    -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+    <!--
+        WAKE_LOCK
+        Prevents the CPU from sleeping while a notification is being
+        delivered and processed by the BroadcastReceiver.
+        Without it, notification delivery can be interrupted mid-flight
+        on aggressive battery-saver ROM configurations (Xiaomi, Samsung, etc.).
+    -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+    <!--
+        FOREGROUND_SERVICE — required to call startForegroundService().
+        Without it, the OS throws a SecurityException on Android 9+.
+    -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
+    <!--
+        FOREGROUND_SERVICE_MEDIA_PLAYBACK — Android 14+ (API 34+)
+        Required when a foreground service plays audio (MediaPlayer / AudioManager).
+        Without it, the service is force-stopped by the OS immediately.
+    -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+
+    <!-- Standard internet permission — already present, kept here -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         APPLICATION
+         ══════════════════════════════════════════════════════════════════════ -->
 
     <application
         android:allowBackup="true"
@@ -10,6 +85,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+
         <activity
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode|navigation|density"
             android:name=".MainActivity"
@@ -28,11 +104,52 @@
             android:authorities="${applicationId}.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
-            <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/file_paths" />
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
         </provider>
+
+        <!--
+            NOTE: The Capacitor LocalNotifications plugin automatically merges
+            its own LocalNotificationRestoreReceiver into this manifest via
+            Gradle's manifest merger. You do NOT need to declare it manually.
+
+            It handles BOOT_COMPLETED by re-reading all pending notifications
+            from the plugin's internal SQLite store and re-registering them
+            with AlarmManager. This works automatically as long as
+            RECEIVE_BOOT_COMPLETED is declared above.
+        -->
+
+        <!--
+            ReminderService — Foreground Service
+            Keeps the Capacitor WebView process alive so that:
+             1. Custom sounds can be played when the app is backgrounded.
+             2. LocalNotification events are reliably received.
+            foregroundServiceType="mediaPlayback" matches the
+            FOREGROUND_SERVICE_MEDIA_PLAYBACK permission above.
+        -->
+        <service
+            android:name=".ReminderService"
+            android:foregroundServiceType="mediaPlayback"
+            android:exported="false"
+            android:stopWithTask="false" />
+
+        <!--
+            ReminderWidgetProvider — Home Screen Widget
+            Declares the AppWidgetProvider class that handles home widget layout updates.
+        -->
+        <receiver
+            android:name=".ReminderWidgetProvider"
+            android:label="Adhivio Reminders Widget"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/reminder_widget_info" />
+        </receiver>
+
     </application>
 
-    <!-- Permissions -->
-
-    <uses-permission android:name="android.permission.INTERNET" />
 </manifest>

@@ -5,39 +5,16 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
+import { RemindersProvider } from "@/contexts/RemindersContext";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
-import { LocalNotifications } from '@capacitor/local-notifications';
-import { useEffect } from 'react';
+
+// Channel creation has been moved to main.tsx so it runs
+// exactly once before React mounts — do NOT re-add it here.
 
 const queryClient = new QueryClient();
 
 const App = () => {
-
-  useEffect(() => {
-
-    const setupNotifications = async () => {
-
-      // Request permission (Android 13+)
-      await LocalNotifications.requestPermissions();
-
-      // Create notification channel (Android 8+)
-      await LocalNotifications.createChannel({
-        id: 'reminder-channel',
-        name: 'Reminder Notifications',
-        description: 'Channel for reminder alerts',
-        importance: 5,
-        sound: 'reminder_sound', // NO .wav extension
-        vibration: true,
-        visibility: 1
-      });
-
-    };
-
-    setupNotifications();
-
-  }, []);
-
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
@@ -45,12 +22,14 @@ const App = () => {
           <Toaster />
           <Sonner />
           <OfflineIndicator />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
+          <RemindersProvider>
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </RemindersProvider>
         </TooltipProvider>
       </QueryClientProvider>
     </ErrorBoundary>

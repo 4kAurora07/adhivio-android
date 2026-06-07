@@ -24,18 +24,22 @@ function createOscillatorSound(
 export function useSounds() {
   const ctxRef = useRef<AudioContext | null>(null);
 
-  const getContext = useCallback(() => {
-    if (!ctxRef.current) {
+  const getContext = useCallback((): AudioContext => {
+    if (!ctxRef.current || ctxRef.current.state === 'closed') {
       ctxRef.current = new AudioContext();
     }
     return ctxRef.current;
   }, []);
 
-  const playBuiltIn = useCallback((sound: BuiltInSound, volume: number = 0.7) => {
+  const playBuiltIn = useCallback(async (sound: BuiltInSound, volume: number = 0.7) => {
     try {
       const ctx = getContext();
+      // Resume AudioContext — required after browser autoplay policy suspends it
+      if (ctx.state === 'suspended') {
+        await ctx.resume();
+      }
       const gain = ctx.createGain();
-      gain.gain.value = volume;
+      gain.gain.value = Math.max(0, Math.min(1, volume));
       gain.connect(ctx.destination);
 
       switch (sound) {
@@ -63,8 +67,8 @@ export function useSounds() {
   const playCustom = useCallback((base64Data: string, volume: number = 0.7) => {
     try {
       const audio = new Audio(base64Data);
-      audio.volume = volume;
-      audio.play().catch(() => {});
+      audio.volume = Math.max(0, Math.min(1, volume));
+      audio.play().catch((e) => console.warn('Failed to play custom sound', e));
     } catch (e) {
       console.warn('Failed to play custom sound', e);
     }

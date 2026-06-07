@@ -134,6 +134,23 @@ export function useReminders() {
   }, []);
 
   // ----------------------------------------
+  // CLEAR SNOOZE
+  // Called after a snoozed reminder's snooze time fires.
+  // Resets snoozedUntil so the reminder returns to its normal
+  // repeat schedule (daily/weekly) or becomes overdue (once).
+  // Also resets notified so the next occurrence will be scheduled.
+  // ----------------------------------------
+  const clearSnooze = useCallback((id: string) => {
+    setReminders(prev =>
+      prev.map(r =>
+        r.id === id
+          ? { ...r, snoozedUntil: undefined, notified: false }
+          : r
+      )
+    );
+  }, []);
+
+  // ----------------------------------------
   // SORTED LISTS
   // ----------------------------------------
   const activeReminders = reminders
@@ -158,10 +175,11 @@ export function useReminders() {
     completedReminders,
     addReminder,
     updateReminder,     // partial updates
-    replaceReminder,    // 🔥 pass THIS to useNotifications
+    replaceReminder,    // full object update (used by notifications)
     deleteReminder,
     completeReminder,
     snoozeReminder,
     markNotified,
+    clearSnooze,        // clears snoozedUntil after snooze fires
   };
-}
+}

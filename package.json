@@ -10,10 +10,12 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "postinstall": "node scripts/patch-notifications.js"
   },
   "dependencies": {
     "@capacitor/android": "^8.1.0",
+    "@capacitor/app": "^8.1.0",
     "@capacitor/cli": "^8.1.0",
     "@capacitor/core": "^8.1.0",
     "@capacitor/local-notifications": "^8.0.1",
