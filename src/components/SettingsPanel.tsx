@@ -38,13 +38,13 @@ export function SettingsPanel({ open, onClose, settings, onUpdate }: SettingsPan
       <DialogContent className="sm:max-w-md max-h-[85vh] md:max-h-[90vh] flex flex-col p-0 gap-0 border-0 shadow-2xl overflow-hidden rounded-3xl sm:rounded-3xl">
 
         {/* ── Header ── */}
-        <div className="flex-shrink-0 px-6 pt-6 pb-4 bg-gradient-to-br from-red-500 to-rose-600">
+        <div className="flex-shrink-0 px-6 pt-6 pb-4 bg-card border-b border-border/40">
           <DialogHeader>
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                <Layers className="w-4.5 h-4.5 text-white" />
+              <div className="w-9 h-9 rounded-xl bg-red-50 dark:bg-red-950/30 flex items-center justify-center">
+                <Layers className="w-4.5 h-4.5 text-[#E05C5C]" />
               </div>
-              <DialogTitle className="text-white text-lg font-bold tracking-tight">
+              <DialogTitle className="text-foreground text-lg font-bold tracking-tight">
                 Settings
               </DialogTitle>
             </div>
@@ -58,9 +58,10 @@ export function SettingsPanel({ open, onClose, settings, onUpdate }: SettingsPan
 
             {/* Notifications */}
             <SettingRow
-              icon={<BellRing className="w-4 h-4 text-red-500" />}
+              icon={<BellRing className="w-4 h-4 text-[#E05C5C]" />}
               title="Notifications"
               description="Show reminder alerts on your device"
+              alternate={false}
               action={
                 <Switch
                   checked={settings.notificationsEnabled}
@@ -71,9 +72,10 @@ export function SettingsPanel({ open, onClose, settings, onUpdate }: SettingsPan
 
             {/* Dark Mode */}
             <SettingRow
-              icon={<Moon className="w-4 h-4 text-emerald-700" />}
+              icon={<Moon className="w-4 h-4 text-primary-green" />}
               title="Dark Mode"
               description="Switch to a darker appearance"
+              alternate={true}
               action={
                 <Switch
                   checked={settings.darkMode}
@@ -84,13 +86,28 @@ export function SettingsPanel({ open, onClose, settings, onUpdate }: SettingsPan
 
             {/* Skip Kerala Holidays */}
             <SettingRow
-              icon={<Calendar className="w-4 h-4 text-red-500" />}
+              icon={<Calendar className="w-4 h-4 text-[#E05C5C]" />}
               title="Skip Kerala Public Holidays"
               description="Reschedule reminders on Kerala holidays to next working day"
+              alternate={false}
               action={
                 <Switch
                   checked={settings.skipKeralaHolidays}
                   onCheckedChange={(v) => onUpdate({ skipKeralaHolidays: v })}
+                />
+              }
+            />
+
+            {/* Persistent Background Service */}
+            <SettingRow
+              icon={<Layers className="w-4 h-4 text-primary-green" />}
+              title="Persistent Background Service"
+              description="Keeps a silent notification active to prevent Android from killing the app process"
+              alternate={true}
+              action={
+                <Switch
+                  checked={settings.backgroundServiceActive}
+                  onCheckedChange={(v) => onUpdate({ backgroundServiceActive: v })}
                 />
               }
             />
@@ -102,7 +119,7 @@ export function SettingsPanel({ open, onClose, settings, onUpdate }: SettingsPan
           <Section label="Sound & Alerts">
 
             {/* Default Ringtone */}
-            <div className="space-y-2">
+            <div className="p-4 rounded-xl border border-border/20 bg-surface space-y-2">
               <div className="flex items-center gap-2">
                 <Bell className="w-4 h-4 text-amber-500 flex-shrink-0" />
                 <Label className="text-sm font-semibold">Default Ringtone</Label>
@@ -129,19 +146,19 @@ export function SettingsPanel({ open, onClose, settings, onUpdate }: SettingsPan
                   className="rounded-xl h-10 w-10 border-border/60 bg-muted/40 flex-shrink-0"
                   onClick={() => playBuiltIn(settings.defaultSound, settings.volume)}
                 >
-                  <Volume2 className="w-4 h-4 text-red-500" />
+                  <Volume2 className="w-4 h-4 text-primary-red" />
                 </Button>
               </div>
             </div>
 
             {/* Volume */}
-            <div className="space-y-2.5">
+            <div className="p-4 rounded-xl border border-border/20 bg-surface-alt space-y-2.5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Volume2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                  <Volume2 className="w-4 h-4 text-primary-green flex-shrink-0" />
                   <Label className="text-sm font-semibold">Volume</Label>
                 </div>
-                <span className="text-xs font-bold text-red-500 bg-red-50/60 dark:bg-red-950/30 px-2 py-0.5 rounded-full">
+                <span className="text-xs font-bold text-primary-red bg-red-light dark:bg-[#3A1F1F] px-2 py-0.5 rounded-full">
                   {Math.round(settings.volume * 100)}%
                 </span>
               </div>
@@ -154,9 +171,9 @@ export function SettingsPanel({ open, onClose, settings, onUpdate }: SettingsPan
             </div>
 
             {/* Default Snooze */}
-            <div className="space-y-2">
+            <div className="p-4 rounded-xl border border-border/20 bg-surface space-y-2">
               <div className="flex items-center gap-2">
-                <Timer className="w-4 h-4 text-rose-500 flex-shrink-0" />
+                <Timer className="w-4 h-4 text-[#E05C5C] flex-shrink-0" />
                 <Label className="text-sm font-semibold">Default Snooze</Label>
               </div>
               <Select
@@ -182,10 +199,10 @@ export function SettingsPanel({ open, onClose, settings, onUpdate }: SettingsPan
             {/* App identity card */}
             <div className="rounded-2xl overflow-hidden border border-border/60">
 
-              {/* Top gradient band */}
-              <div className="h-16 bg-gradient-to-r from-red-500 to-rose-600 relative">
-                <div className="absolute -bottom-5 left-5 w-10 h-10 rounded-xl bg-white dark:bg-card shadow-lg flex items-center justify-center border-2 border-background">
-                  <BellRing className="w-5 h-5 text-red-500" />
+              {/* Top flat band */}
+              <div className="h-16 bg-surface-alt dark:bg-[#22302A] relative border-b border-border/40">
+                <div className="absolute -bottom-5 left-5 w-10 h-10 rounded-xl bg-white dark:bg-[#1A2420] shadow-sm flex items-center justify-center border-2 border-border">
+                  <BellRing className="w-5 h-5 text-[#E05C5C]" />
                 </div>
               </div>
 
@@ -209,11 +226,11 @@ export function SettingsPanel({ open, onClose, settings, onUpdate }: SettingsPan
 
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-muted-foreground">Crafted by</span>
-                  <span className="font-bold text-red-500">ADAL Studio</span>
+                  <span className="font-bold text-primary-red">ADAL Studio</span>
                 </div>
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-muted-foreground">Built by</span>
-                  <span className="font-bold text-red-500">Alwin</span>
+                  <span className="font-bold text-primary-red">Alwin</span>
                 </div>
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-muted-foreground">Data storage</span>
@@ -232,7 +249,7 @@ export function SettingsPanel({ open, onClose, settings, onUpdate }: SettingsPan
         {/* ── Footer ── */}
         <div className="flex-shrink-0 px-6 py-4 bg-background border-t border-border/40 flex items-center justify-between">
           <Button
-            className="w-full h-11 rounded-xl font-semibold bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white shadow-md shadow-red-500/20 border-0"
+            className="w-full h-11 rounded-xl font-semibold bg-[#E05C5C] hover:bg-[#E05C5C]/90 text-white shadow-sm border-0"
             onClick={onClose}
           >
             Save & Close
@@ -247,31 +264,39 @@ export function SettingsPanel({ open, onClose, settings, onUpdate }: SettingsPan
 /* ── Section wrapper ── */
 function Section({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="space-y-4">
-      <p className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground/70 px-0.5">
+    <div className="space-y-3">
+      <p 
+        style={{ fontVariant: 'all-small-caps' }} 
+        className="text-xs font-bold uppercase tracking-widest text-[#6B7280]"
+      >
         {label}
       </p>
-      {children}
+      <div className="space-y-2">
+        {children}
+      </div>
     </div>
   );
 }
 
 /* ── Toggle row ── */
 function SettingRow({
-  icon, title, description, action,
+  icon, title, description, action, alternate,
 }: {
   icon: React.ReactNode;
   title: string;
   description: string;
   action: React.ReactNode;
+  alternate?: boolean;
 }) {
   return (
-    <div className="flex items-center justify-between gap-3 py-1">
+    <div className={`flex items-center justify-between gap-3 px-4 py-3 rounded-xl border border-border/20 ${
+      alternate ? 'bg-surface-alt' : 'bg-surface'
+    }`}>
       <div className="flex items-start gap-2.5 flex-1 min-w-0">
         <div className="mt-0.5 flex-shrink-0">{icon}</div>
         <div className="min-w-0">
           <Label className="text-sm font-semibold leading-tight">{title}</Label>
-          <p className="text-xs text-muted-foreground mt-0.5 leading-snug">{description}</p>
+          <p className="text-xs text-text-secondary dark:text-muted-foreground mt-0.5 leading-snug">{description}</p>
         </div>
       </div>
       <div className="flex-shrink-0">{action}</div>

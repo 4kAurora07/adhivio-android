@@ -201,6 +201,16 @@ public class ReminderService extends Service {
             mediaPlayer.release();
             mediaPlayer = null;
         }
+
+        // If the persistent background service is NOT enabled, stop the service now
+        boolean serviceActive = getSharedPreferences("adhivio_settings", MODE_PRIVATE)
+            .getBoolean("backgroundServiceActive", false);
+
+        if (!serviceActive) {
+            Log.d(TAG, "Stopping service after sound completion (backgroundServiceActive is false)");
+            stopForeground(true);
+            stopSelf();
+        }
     }
 
     // ─── Static helper: save base64 audio to internal storage ────────────────

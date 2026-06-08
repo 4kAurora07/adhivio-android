@@ -38,6 +38,7 @@ export interface AppSettings {
   darkMode: boolean;
   volume: number;
   skipKeralaHolidays: boolean; // Settings option
+  backgroundServiceActive: boolean;
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
@@ -47,6 +48,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   darkMode: false,
   volume: 0.7,
   skipKeralaHolidays: false,
+  backgroundServiceActive: false,
 };
 
 export const BUILT_IN_SOUNDS: { value: BuiltInSound; label: string }[] = [
@@ -58,10 +60,10 @@ export const BUILT_IN_SOUNDS: { value: BuiltInSound; label: string }[] = [
 ];
 
 export const CATEGORY_DETAILS: Record<Category, { label: string; emoji: string; color: string; bg: string; border: string }> = {
-  work:     { label: 'Work',     emoji: '💼', color: 'text-red-600 dark:text-red-400',       bg: 'bg-red-50 dark:bg-red-950/20',       border: 'border-red-500' },
-  personal: { label: 'Personal', emoji: '🙂', color: 'text-emerald-600 dark:text-emerald-400',   bg: 'bg-emerald-50 dark:bg-emerald-950/20',   border: 'border-emerald-500' },
-  health:   { label: 'Health',   emoji: '❤️', color: 'text-rose-600 dark:text-rose-400',         bg: 'bg-rose-50 dark:bg-rose-950/20',         border: 'border-rose-500' },
-  finance:  { label: 'Finance',  emoji: '💰', color: 'text-amber-600 dark:text-amber-400',       bg: 'bg-amber-50 dark:bg-amber-950/20',       border: 'border-amber-500' },
-  church:   { label: 'Church',   emoji: '⛪', color: 'text-emerald-700 dark:text-emerald-400',   bg: 'bg-emerald-50 dark:bg-emerald-950/20',   border: 'border-emerald-500' },
-  other:    { label: 'Other',    emoji: '🔖', color: 'text-slate-600 dark:text-slate-400',       bg: 'bg-slate-50 dark:bg-slate-950/20',       border: 'border-slate-500' },
+  work:     { label: 'Work',     emoji: '💼', color: 'text-primary-red', bg: 'bg-red-light dark:bg-[#3A1F1F]', border: 'border-primary-red/20' },
+  personal: { label: 'Personal', emoji: '🙂', color: 'text-primary-green', bg: 'bg-green-light dark:bg-[#1B3528]', border: 'border-primary-green/20' },
+  health:   { label: 'Health',   emoji: '❤️', color: 'text-primary-red', bg: 'bg-red-light dark:bg-[#3A1F1F]', border: 'border-primary-red/20' },
+  finance:  { label: 'Finance',  emoji: '💰', color: 'text-[#D97706]', bg: 'bg-[#FEF3C7] dark:bg-[#3D2E14]', border: 'border-[#D97706]/20' },
+  church:   { label: 'Church',   emoji: '⛪', color: 'text-primary-green', bg: 'bg-green-light dark:bg-[#1B3528]', border: 'border-primary-green/20' },
+  other:    { label: 'Other',    emoji: '🔖', color: 'text-text-secondary dark:text-[#9CA3AF]', bg: 'bg-surface-alt dark:bg-[#22302A]', border: 'border-border/40' },
 };

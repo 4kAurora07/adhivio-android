@@ -71,13 +71,13 @@ export function QuickAddSheet({ open, onClose, onSave, defaultSound }: QuickAddS
       <DialogContent className="fixed bottom-0 top-auto translate-y-0 sm:top-[50%] sm:bottom-auto sm:translate-y-[-50%] sm:max-w-md w-full flex flex-col p-0 gap-0 border-0 shadow-2xl overflow-hidden rounded-t-3xl sm:rounded-3xl bg-background">
         
         {/* Header */}
-        <div className="flex-shrink-0 px-6 pt-6 pb-5 bg-gradient-to-br from-red-500 to-rose-600">
+        <div className="flex-shrink-0 px-6 pt-6 pb-5 bg-surface border-b border-border/40">
           <DialogHeader>
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                <Zap className="w-4.5 h-4.5 text-white" />
+              <div className="w-9 h-9 rounded-xl bg-red-light flex items-center justify-center">
+                <Zap className="w-4.5 h-4.5 text-primary-red" />
               </div>
-              <DialogTitle className="text-white text-base font-bold tracking-tight">
+              <DialogTitle className="text-text-primary text-base font-bold tracking-tight">
                 Quick Add Reminder
               </DialogTitle>
             </div>
@@ -158,7 +158,7 @@ export function QuickAddSheet({ open, onClose, onSave, defaultSound }: QuickAddS
             </Button>
             <Button
               type="submit"
-              className="flex-1 h-11 rounded-xl font-semibold bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white shadow-md shadow-red-500/20 border-0"
+              className="flex-1 h-11 rounded-xl font-semibold bg-primary-red hover:opacity-90 text-white border-0 transition-opacity"
               disabled={!title.trim()}
             >
               Add Reminder

@@ -39,6 +39,18 @@ async function initNotificationChannel(): Promise<void> {
       lights: true,
     });
     console.debug("[Notifications] Channel created: reminder_channel");
+
+    await LocalNotifications.createChannel({
+      id: "silent_reminder_channel",
+      name: "Silent Reminders",
+      description: "Adhivio reminders with custom background sounds",
+      importance: 5,             // IMPORTANCE_HIGH → heads-up banner
+      visibility: 1,
+      sound: undefined,          // silent channel
+      vibration: false,          // disable system vibration
+      lights: true,
+    });
+    console.debug("[Notifications] Channel created: silent_reminder_channel");
   } catch (err) {
     // Non-fatal — the app still works; notifications may use Android default sound
     console.warn("[Notifications] createChannel failed (may already exist):", err);

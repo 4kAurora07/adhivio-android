@@ -9,7 +9,15 @@ interface WidgetPluginType {
   getClickedReminder(): Promise<{ reminderId: string | null }>;
 }
 
+interface SoundStoragePlugin {
+  start(): Promise<void>;
+  stop(): Promise<void>;
+  setBackgroundServiceActive(options: { active: boolean }): Promise<void>;
+  setVolume(options: { volume: number }): Promise<void>;
+}
+
 const WidgetPlugin = registerPlugin<WidgetPluginType>('WidgetPlugin');
+const SoundStorage = registerPlugin<SoundStoragePlugin>('SoundStorage');
 const isAndroid = Capacitor.getPlatform() === 'android';
 
 interface RemindersContextType {
@@ -185,7 +193,30 @@ export const RemindersProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   }, []);
 
   const updateSettings = useCallback((partial: Partial<AppSettings>) => {
-    setSettings((prev) => ({ ...prev, ...partial }));
+    setSettings((prev) => {
+      const next = { ...prev, ...partial };
+      if (isAndroid) {
+        if (partial.backgroundServiceActive !== undefined) {
+          SoundStorage.setBackgroundServiceActive({ active: partial.backgroundServiceActive })
+            .catch(e => console.warn('Failed to set native background service status', e));
+        }
+        if (partial.volume !== undefined) {
+          SoundStorage.setVolume({ volume: partial.volume })
+            .catch(e => console.warn('Failed to set native volume', e));
+        }
+      }
+      return next;
+    });
+  }, []);
+
+  // Sync initial settings to native on startup
+  useEffect(() => {
+    if (isAndroid) {
+      SoundStorage.setVolume({ volume: settings.volume })
+        .catch(e => console.warn('Failed to sync initial volume', e));
+      SoundStorage.setBackgroundServiceActive({ active: settings.backgroundServiceActive })
+        .catch(e => console.warn('Failed to sync initial background service status', e));
+    }
   }, []);
 
   // --- Filtered Lists ---

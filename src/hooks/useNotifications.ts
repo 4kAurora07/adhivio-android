@@ -2,7 +2,13 @@ import { useEffect, useRef, useCallback } from "react";
 import { LocalNotifications } from "@capacitor/local-notifications";
 import { registerPlugin, Capacitor } from "@capacitor/core";
 import type { Reminder, BuiltInSound } from "@/types/reminder";
-import { getNextWorkingDay } from "@/lib/holidays";
+import {
+  uuidToNumericId,
+  getNextFireTime,
+  clampVolume,
+  buildNotificationBody,
+  buildPriorityPrefix,
+} from "@/lib/notificationUtils";
 
 interface SoundStoragePlugin {
   start(): Promise<void>;
@@ -10,116 +16,37 @@ interface SoundStoragePlugin {
   saveSound(options: { key: string; base64: string }): Promise<{ path: string }>;
   playSound(options: { key: string; volume?: number }): Promise<void>;
   deleteSound(options: { key: string }): Promise<{ deleted: boolean }>;
+  checkBackgroundPermissions(): Promise<{
+    notificationsGranted: boolean;
+    exactAlarmGranted: boolean;
+    batteryOptimizationIgnored: boolean;
+  }>;
+  requestExactAlarmPermission(): Promise<void>;
+  requestBatteryOptimizationExemption(): Promise<void>;
+  openSettings(): Promise<void>;
+  setBackgroundServiceActive(options: { active: boolean }): Promise<void>;
+  setVolume(options: { volume: number }): Promise<void>;
 }
 
 const SoundStorage = registerPlugin<SoundStoragePlugin>("SoundStorage");
 const isAndroid = Capacitor.getPlatform() === "android";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// UUID → Numeric ID (djb2 hash, deterministic, 32-bit safe)
-// Android notification IDs must be 32-bit signed integers.
-// ─────────────────────────────────────────────────────────────────────────────
-function uuidToNumericId(uuid: string): number {
-  let hash = 5381;
-  for (let i = 0; i < uuid.length; i++) {
-    hash = (hash * 33) ^ uuid.charCodeAt(i);
-  }
-  return Math.abs(hash >>> 0) || 1;
-}
+
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Permission — re-checked each app session (NOT cached across sessions)
-// so that users who grant permission in Settings are not stuck denied.
+// Permission — checked silently on sync (does NOT request automatically)
 // ─────────────────────────────────────────────────────────────────────────────
-let _permissionThisSession: boolean | null = null;
-
-async function ensurePermission(): Promise<boolean> {
-  if (_permissionThisSession !== null) return _permissionThisSession;
+async function checkPermissionOnly(): Promise<boolean> {
   try {
-    // First check existing status — avoids prompting again if already granted
     const status = await LocalNotifications.checkPermissions();
-    if (status.display === "granted") {
-      _permissionThisSession = true;
-      return true;
-    }
-    // Not granted — request it
-    const req = await LocalNotifications.requestPermissions();
-    _permissionThisSession = req.display === "granted";
-    return _permissionThisSession;
+    return status.display === "granted";
   } catch {
-    _permissionThisSession = false;
     return false;
   }
 }
 
 
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Next fire time
-// ─────────────────────────────────────────────────────────────────────────────
-function getNextFireTime(reminder: Reminder, now: number, skipHolidaysSetting = false): Date | null {
-  if (reminder.snoozedUntil) {
-    const d = new Date(reminder.snoozedUntil);
-    return d.getTime() > now ? d : null;
-  }
-
-  let fireAt = new Date(reminder.dateTime);
-
-  const adjustHolidays = (date: Date) => {
-    const skip = reminder.skipHolidays || skipHolidaysSetting;
-    return skip ? getNextWorkingDay(date) : date;
-  };
-
-  if (fireAt.getTime() > now) {
-    return adjustHolidays(fireAt);
-  }
-
-  if (reminder.repeat === "once") return null;
-
-  // Check if we have already passed the end date
-  if (reminder.endDate) {
-    const endLimit = new Date(reminder.endDate).getTime();
-    if (now > endLimit) return null;
-  }
-
-  if (reminder.repeat === "daily") {
-    while (fireAt.getTime() <= now) {
-      fireAt = new Date(fireAt.getTime() + 24 * 60 * 60 * 1000);
-    }
-  } else if (reminder.repeat === "weekly") {
-    while (fireAt.getTime() <= now) {
-      fireAt = new Date(fireAt.getTime() + 7 * 24 * 60 * 60 * 1000);
-    }
-  } else if (reminder.repeat === "custom" && reminder.repeatRule) {
-    const rule = reminder.repeatRule;
-    if (rule.type === "days") {
-      const intervalDays = rule.interval || 1;
-      while (fireAt.getTime() <= now) {
-        fireAt = new Date(fireAt.getTime() + intervalDays * 24 * 60 * 60 * 1000);
-      }
-    } else if (rule.type === "weekdays") {
-      const weekdays = rule.days || [];
-      if (weekdays.length === 0) return null;
-      while (fireAt.getTime() <= now || !weekdays.includes(fireAt.getDay())) {
-        fireAt = new Date(fireAt.getTime() + 24 * 60 * 60 * 1000);
-      }
-    } else if (rule.type === "monthly") {
-      while (fireAt.getTime() <= now) {
-        fireAt.setMonth(fireAt.getMonth() + 1);
-      }
-    }
-  } else {
-    return null;
-  }
-
-  // Check if target fire matches end date constraints
-  if (reminder.endDate) {
-    const endLimit = new Date(reminder.endDate).getTime();
-    if (fireAt.getTime() > endLimit) return null;
-  }
-
-  return adjustHolidays(fireAt);
-}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Web Audio foreground sound (in-app alerts)
@@ -158,7 +85,7 @@ async function playBuiltInForeground(sound: BuiltInSound, volume = 0.7) {
     const ctx = getAudioContext();
     if (ctx.state === "suspended") await ctx.resume();
     const gain = ctx.createGain();
-    gain.gain.value = Math.max(0, Math.min(1, volume));
+    gain.gain.value = clampVolume(volume);
     gain.connect(ctx.destination);
     switch (sound) {
       case "alarm":
@@ -324,7 +251,7 @@ export function useNotifications({
     let cancelled = false;
 
     async function syncSchedule(): Promise<void> {
-      const granted = await ensurePermission();
+      const granted = await checkPermissionOnly();
       if (!granted) {
         console.warn("[Notifications] Permission not granted");
         return;
@@ -375,15 +302,8 @@ export function useNotifications({
             }
           }
 
-          // 4. Start/stop foreground service depending on active reminders
-          const activePending = reminders.filter(
-            (r) => !r.completed && !(r.repeat === "once" && r.notified)
-          );
-          if (activePending.length > 0) {
-            await SoundStorage.start();
-          } else {
-            await SoundStorage.stop();
-          }
+          // 4. Foreground service is disabled to prevent continuous background execution (battery rules)
+          // We rely purely on exact alarm scheduling for background alerts.
         } catch (e) {
           console.warn("[Notifications] SoundStorage native operations failed:", e);
         }
@@ -418,14 +338,14 @@ export function useNotifications({
 
         toSchedule.push({
           id: numericId,
-          title: `${priorityEmoji}${reminder.title}`,
-          body,
+          title: `${buildPriorityPrefix(reminder.priority)}${reminder.title}`,
+          body: buildNotificationBody(reminder),
           schedule: {
             at: fireAt,
             allowWhileIdle: true, // fires in Doze / battery-saver mode
           },
           // NOTE: channelId must match the channel created in main.tsx.
-          channelId: "reminder_channel",
+          channelId: reminder.sound === "custom" ? "silent_reminder_channel" : "reminder_channel",
           // smallIcon must match a drawable in res/drawable
           smallIcon: "ic_stat_icon_config_sample",
           extra: {

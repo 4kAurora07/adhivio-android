@@ -4,102 +4,123 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
   :root {
+    /* ── Exact CSS variables requested ── */
+    --color-primary-red:     #E05C5C;   /* soft warm red — buttons, alerts, priority high */
+    --color-primary-green:   #4CAF87;   /* mint green — success, complete, active states */
+    --color-background:      #F9F9F9;   /* near-white page background */
+    --color-surface:         #FFFFFF;   /* cards, modals, panels */
+    --color-surface-alt:     #F2F6F4;   /* subtle alternate surface (settings rows) */
+    --color-text-primary:    #1A1A1A;   /* headings, labels */
+    --color-text-secondary:  #6B7280;   /* subtext, descriptions */
+    --color-border:          #E5E7EB;   /* dividers, card borders */
+    --color-red-light:       #FDECEA;   /* light red tint for badges, tags */
+    --color-green-light:     #E8F5EF;   /* light green tint for success badges */
+
     /* ── Surfaces ── */
-    --background:  240 20% 98%;
-    --foreground:  240 15% 12%;
+    --background:  0 0% 97.6%;
+    --foreground:  0 0% 10.2%;
 
     --card:        0 0% 100%;
-    --card-foreground: 240 15% 12%;
+    --card-foreground: 0 0% 10.2%;
 
     --popover:     0 0% 100%;
-    --popover-foreground: 240 15% 12%;
+    --popover-foreground: 0 0% 10.2%;
 
-    /* ── Brand: Red & Dark Green combo ── */
-    --primary:     346 84% 50%;         /* #e11d48 ruby red */
+    /* ── Brand: Red & Mint Green accents ── */
+    --primary:     0 69.4% 61.8%;
     --primary-foreground: 0 0% 100%;
 
-    /* ── Accent: Deep Forest Dark Green ── */
-    --secondary:   145 60% 16%;         /* #0a3622 dark green */
+    --secondary:   158.4% 49.3% 49.2%;
     --secondary-foreground: 0 0% 100%;
 
     /* ── Muted surfaces ── */
-    --muted:       240 14% 95%;
-    --muted-foreground: 240 8% 46%;
+    --muted:       150 10% 95.7%;
+    --muted-foreground: 220 8.9% 46.1%;
 
     /* ── Accent tint (soft mint) ── */
-    --accent:      145 40% 94%;
-    --accent-foreground: 145 60% 18%;
+    --accent:      150 10% 95.7%;
+    --accent-foreground: 0 0% 10.2%;
 
-    --destructive: 4 86% 58%;           /* #ef4444 red-500 */
+    --destructive: 0 69.4% 61.8%;
     --destructive-foreground: 0 0% 100%;
 
-    --border:      240 12% 90%;
-    --input:       240 12% 90%;
-    --ring:        346 84% 50%;
+    --border:      220 13% 91.8%;
+    --input:       220 13% 91.8%;
+    --ring:        0 69.4% 61.8%;
 
     --radius: 0.875rem;
 
     /* ── Priority colours ── */
-    --priority-low:    145 60% 20%;     /* dark green */
-    --priority-medium: 37  95% 53%;     /* amber */
-    --priority-high:   346 84% 50%;     /* red */
+    --priority-low:    158.4% 49.3% 49.2%;
+    --priority-medium: 37 95% 53%;
+    --priority-high:   0 69.4% 61.8%;
 
     /* Sidebar (unused but keeps build happy) */
     --sidebar-background:        0 0% 100%;
-    --sidebar-foreground:        240 15% 12%;
-    --sidebar-primary:           346 84% 50%;
+    --sidebar-foreground:        0 0% 10.2%;
+    --sidebar-primary:           0 69.4% 61.8%;
     --sidebar-primary-foreground:0 0% 100%;
-    --sidebar-accent:            240 14% 95%;
-    --sidebar-accent-foreground: 240 15% 12%;
-    --sidebar-border:            240 12% 90%;
-    --sidebar-ring:              346 84% 50%;
+    --sidebar-accent:            150 10% 95.7%;
+    --sidebar-accent-foreground: 0 0% 10.2%;
+    --sidebar-border:            220 13% 91.8%;
+    --sidebar-ring:              0 69.4% 61.8%;
   }
 
   .dark {
-    --background:  240 18% 9%;
-    --foreground:  240 14% 95%;
+    /* ── Exact CSS variables requested ── */
+    --color-primary-red:     #E05C5C;
+    --color-primary-green:   #4CAF87;
+    --color-background:      #0F1612;
+    --color-surface:         #1A2420;
+    --color-surface-alt:     #22302A;
+    --color-text-primary:    #F3F4F6;
+    --color-text-secondary:  #9CA3AF;
+    --color-border:          #2D3F38;
+    --color-red-light:       #3A1F1F;
+    --color-green-light:     #1B3528;
 
-    --card:        240 18% 13%;
-    --card-foreground: 240 14% 95%;
+    --background:  146 21.1% 6.7%;
+    --foreground:  220 14.3% 95.9%;
 
-    --popover:     240 18% 13%;
-    --popover-foreground: 240 14% 95%;
+    --card:        153 16.7% 12.2%;
+    --card-foreground: 220 14.3% 95.9%;
 
-    --primary:     346 84% 58%;         /* slightly lighter red in dark */
+    --popover:     153 16.7% 12.2%;
+    --popover-foreground: 220 14.3% 95.9%;
+
+    --primary:     0 69.4% 61.8%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary:   145 50% 28%;         /* dark green */
+    --secondary:   158.4% 49.3% 49.2%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted:       240 16% 18%;
-    --muted-foreground: 240 10% 58%;
+    --muted:       153 16.7% 17%;
+    --muted-foreground: 220 8.9% 65%;
 
-    --accent:      145 30% 14%;
-    --accent-foreground: 145 50% 65%;
+    --accent:      153 16.7% 17%;
+    --accent-foreground: 220 14.3% 95.9%;
 
-    --destructive: 4 72% 48%;
-    --destructive-foreground: 240 14% 95%;
+    --destructive: 0 69.4% 61.8%;
+    --destructive-foreground: 220 14.3% 95.9%;
 
-    --border:      240 14% 22%;
-    --input:       240 14% 22%;
-    --ring:        346 84% 58%;
+    --border:      156 16.7% 21.2%;
+    --input:       156 16.7% 21.2%;
+    --ring:        0 69.4% 61.8%;
 
-    --priority-low:    145 50% 28%;
-    --priority-medium: 37  95% 53%;
-    --priority-high:   346 84% 58%;
+    --priority-low:    158.4% 49.3% 49.2%;
+    --priority-medium: 37 95% 53%;
+    --priority-high:   0 69.4% 61.8%;
 
-    --sidebar-background:        240 18% 9%;
-    --sidebar-foreground:        240 14% 95%;
-    --sidebar-primary:           346 84% 58%;
+    --sidebar-background:        146 21.1% 6.7%;
+    --sidebar-foreground:        220 14.3% 95.9%;
+    --sidebar-primary:           0 69.4% 61.8%;
     --sidebar-primary-foreground:0 0% 100%;
-    --sidebar-accent:            240 16% 18%;
-    --sidebar-accent-foreground: 240 14% 95%;
-    --sidebar-border:            240 14% 22%;
-    --sidebar-ring:              346 84% 58%;
+    --sidebar-accent:            153 16.7% 17%;
+    --sidebar-accent-foreground: 220 14.3% 95.9%;
+    --sidebar-border:            156 16.7% 21.2%;
+    --sidebar-ring:              0 69.4% 61.8%;
   }
-}
 
 @layer base {
   * {
@@ -129,7 +150,7 @@
 
   /* Gradient text helper */
   .gradient-text {
-    @apply bg-gradient-to-r from-red-500 to-rose-600 bg-clip-text text-transparent;
+    @apply text-primary-red;
   }
 
   /* Soft card glow on hover */
@@ -158,25 +179,25 @@ section[data-sonner-toaster], .toaster.group, [data-sonner-toaster] {
   justify-content: center !important;
 
   /* ── Sonner Custom Variable Overrides ── */
-  --normal-bg: hsla(var(--background), 0.95) !important;
-  --normal-border: hsla(var(--border), 0.6) !important;
+  --normal-bg: hsl(var(--background)) !important;
+  --normal-border: hsl(var(--border)) !important;
   --normal-text: hsl(var(--foreground)) !important;
-  --success-bg: hsla(var(--background), 0.95) !important;
-  --success-border: rgba(16, 185, 129, 0.25) !important;
-  --success-text: #10b981 !important;
-  --error-bg: hsla(var(--background), 0.95) !important;
-  --error-border: rgba(239, 68, 68, 0.25) !important;
-  --error-text: #ef4444 !important;
+  --success-bg: hsl(var(--background)) !important;
+  --success-border: rgba(76, 175, 135, 0.25) !important;
+  --success-text: var(--color-primary-green) !important;
+  --error-bg: hsl(var(--background)) !important;
+  --error-border: rgba(224, 92, 92, 0.25) !important;
+  --error-text: var(--color-primary-red) !important;
   --border-radius: 1rem !important;
 }
 
 [data-sonner-toast] {
-  background-color: hsla(var(--background), 0.92) !important;
+  background-color: hsl(var(--card)) !important;
   backdrop-filter: blur(24px) !important;
   -webkit-backdrop-filter: blur(24px) !important;
   color: hsl(var(--foreground)) !important;
-  border: 1px solid hsla(var(--border), 0.6) !important;
-  box-shadow: 0 10px 30px -10px rgba(225, 29, 72, 0.15), 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05) !important;
   border-radius: 1rem !important;
   font-family: 'Plus Jakarta Sans', system-ui, sans-serif !important;
   font-weight: 700 !important;
@@ -198,19 +219,21 @@ section[data-sonner-toaster], .toaster.group, [data-sonner-toaster] {
 }
 
 [data-sonner-toast][data-type="success"] {
-  border-color: rgba(16, 185, 129, 0.25) !important;
-  background: linear-gradient(to right, hsla(var(--background), 0.95), rgba(16, 185, 129, 0.06)) !important;
+  border-color: rgba(76, 175, 135, 0.3) !important;
+  background-color: var(--color-green-light) !important;
+  color: var(--color-primary-green) !important;
 }
 
 [data-sonner-toast][data-type="success"] [data-icon] {
-  color: #10b981 !important;
+  color: var(--color-primary-green) !important;
 }
 
 [data-sonner-toast][data-type="error"] {
-  border-color: rgba(239, 68, 68, 0.25) !important;
-  background: linear-gradient(to right, hsla(var(--background), 0.95), rgba(239, 68, 68, 0.06)) !important;
+  border-color: rgba(224, 92, 92, 0.3) !important;
+  background-color: var(--color-red-light) !important;
+  color: var(--color-primary-red) !important;
 }
 
 [data-sonner-toast][data-type="error"] [data-icon] {
-  color: #ef4444 !important;
+  color: var(--color-primary-red) !important;
 }

@@ -227,13 +227,13 @@ export function ReminderForm({
       <DialogContent className="sm:max-w-md max-h-[85vh] md:max-h-[90vh] flex flex-col p-0 gap-0 border-0 shadow-2xl overflow-hidden rounded-2xl sm:rounded-2xl">
 
         {/* ── Header ── */}
-        <div className="flex-shrink-0 px-6 pt-6 pb-4 bg-gradient-to-br from-red-500 to-rose-600">
+        <div className="flex-shrink-0 px-6 pt-6 pb-4 bg-card border-b border-border/40">
           <DialogHeader>
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                <Bell className="w-4.5 h-4.5 text-white" />
+              <div className="w-9 h-9 rounded-xl bg-red-50 dark:bg-red-950/30 flex items-center justify-center">
+                <Bell className="w-4.5 h-4.5 text-[#E05C5C]" />
               </div>
-              <DialogTitle className="text-white text-lg font-bold tracking-tight">
+              <DialogTitle className="text-foreground text-lg font-bold tracking-tight">
                 {editingReminder ? 'Edit Reminder' : 'New Reminder'}
               </DialogTitle>
             </div>
@@ -383,8 +383,8 @@ export function ReminderForm({
                           onClick={toggle}
                           className={`w-8 h-8 rounded-full border text-xs font-bold flex items-center justify-center transition-colors
                             ${active
-                              ? 'bg-red-500 text-white border-red-500'
-                              : 'bg-background text-muted-foreground border-border/70 hover:bg-muted/50'
+                              ? 'bg-[#E05C5C] text-white border-[#E05C5C]'
+                              : 'bg-background text-text-secondary border-border/70 hover:bg-muted/50'
                             }`}
                         >
                           {dayChar}
@@ -569,7 +569,7 @@ export function ReminderForm({
 
             {/* Escalating Interval Select */}
             {escalate && (
-              <div className="space-y-1.5 pl-3 border-l-2 border-red-500/30">
+              <div className="space-y-1.5 pl-3 border-l-2 border-[#E05C5C]/30">
                 <Label className="text-xs font-semibold text-muted-foreground">Escalate every</Label>
                 <Select value={String(escalateInterval)} onValueChange={(v) => setEscalateInterval(Number(v))}>
                   <SelectTrigger className="h-10 rounded-xl bg-background border-border/60">
@@ -658,7 +658,7 @@ export function ReminderForm({
               Cancel
             </Button>
             <Button type="submit"
-              className="flex-1 h-11 rounded-xl font-semibold bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white shadow-md shadow-red-500/20 border-0"
+              className="flex-1 h-11 rounded-xl font-semibold bg-[#E05C5C] hover:bg-[#E05C5C]/90 text-white shadow-sm border-0"
               disabled={!isDateTimeValid || isDuplicate || !title.trim() || customSoundMissing}>
               {editingReminder ? 'Update' : 'Create Reminder'}
             </Button>

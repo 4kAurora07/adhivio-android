@@ -38,9 +38,9 @@ function formatReminderDate(dateStr: string) {
 }
 
 const PRIORITY_STYLES = {
-  high:   { bar: 'bg-red-500',    badge: 'bg-red-50  text-red-600  dark:bg-red-950/40  dark:text-red-400',  label: 'High'   },
-  medium: { bar: 'bg-amber-400',  badge: 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400', label: 'Med' },
-  low:    { bar: 'bg-emerald-500',badge: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400', label: 'Low' },
+  high:   { bar: 'bg-[#E05C5C]', badge: 'bg-[#FDECEA] text-[#E05C5C] dark:bg-[#3A1F1F] dark:text-[#E05C5C]',  label: 'High'   },
+  medium: { bar: 'bg-[#F59E0B]', badge: 'bg-[#FEF3C7] text-[#D97706] dark:bg-[#3D2E14] dark:text-[#D97706]', label: 'Med' },
+  low:    { bar: 'bg-[#4CAF87]', badge: 'bg-[#E8F5EF] text-[#4CAF87] dark:bg-[#1B3528] dark:text-[#4CAF87]', label: 'Low' },
 } as const;
 
 
@@ -123,19 +123,16 @@ const ReminderCard = forwardRef<HTMLDivElement, ReminderCardProps>(
           transition={{ delay: index * 0.035, duration: 0.28, ease: 'easeOut' }}
           layout
           whileHover={{ y: -1, scale: 1.005 }}
-          className={`group relative rounded-2xl border border-border/40 bg-card/75 backdrop-blur-md overflow-hidden select-none touch-pan-y
-            shadow-sm hover:shadow-md hover:border-border/80 dark:hover:shadow-black/20
-            transition-all duration-200 cursor-grab active:cursor-grabbing
+          className={`group relative rounded-2xl border border-[#E5E7EB] dark:border-[#2D3F38] bg-white dark:bg-[#1A2420] overflow-hidden select-none touch-pan-y
+            shadow-sm hover:shadow-md transition-all duration-200 cursor-grab active:cursor-grabbing
             ${reminder.completed ? 'opacity-55' : ''}
           `}
         >
-          {/* ── Category left border accent ── */}
-          <div className={`absolute left-0 top-0 bottom-0 w-[4px] ${cat.border} border-l-4`} />
-
-          {/* ── Overdue pulsing glow (high priority only) ── */}
-          {overdue && reminder.priority === 'high' && (
-            <div className="absolute inset-0 rounded-2xl ring-1 ring-red-400/40 animate-pulse pointer-events-none" />
-          )}
+          {/* ── Priority left border accent ── */}
+          <div className={`absolute left-0 top-0 bottom-0 w-[4px] border-l-4 ${
+            reminder.priority === 'high' ? 'border-l-[#E05C5C]' :
+            reminder.priority === 'medium' ? 'border-l-[#F59E0B]' : 'border-l-[#4CAF87]'
+          }`} />
 
           <div className="pl-5 pr-3 py-4 flex items-start gap-3.5">
             {/* ── Checkbox ── */}
@@ -145,8 +142,8 @@ const ReminderCard = forwardRef<HTMLDivElement, ReminderCardProps>(
               className={`mt-1.5 flex-shrink-0 w-5.5 h-5.5 rounded-full border-2 flex items-center justify-center
                 transition-all duration-200 shadow-sm
                 ${reminder.completed
-                  ? 'bg-gradient-to-br from-red-500 to-emerald-800 border-transparent text-white'
-                  : 'border-muted-foreground/30 hover:border-red-500 hover:scale-110 hover:shadow-red-500/10'
+                  ? 'bg-[#4CAF87] border-transparent text-white'
+                  : 'border-muted-foreground/30 hover:border-[#E05C5C] hover:scale-110 hover:shadow-red-500/10'
                 }`}
             >
               {reminder.completed && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
@@ -188,8 +185,8 @@ const ReminderCard = forwardRef<HTMLDivElement, ReminderCardProps>(
                 {/* Snoozed */}
                 {isSnoozed && (
                   <span className="inline-flex items-center gap-1 text-[10px] font-bold
-                    text-amber-700 bg-amber-50 dark:bg-amber-950/40 dark:text-amber-400
-                    px-2.5 py-0.5 rounded-full border border-amber-200/50 dark:border-amber-800/40">
+                    text-[#D97706] bg-[#FEF3C7] dark:bg-[#3D2E14]
+                    px-2.5 py-0.5 rounded-full border border-[#D97706]/20">
                     <Clock className="w-3 h-3" />
                     Snoozed · {formatReminderDate(reminder.snoozedUntil!)}
                   </span>
@@ -199,8 +196,8 @@ const ReminderCard = forwardRef<HTMLDivElement, ReminderCardProps>(
                 {!isSnoozed && (
                   <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${
                     overdue
-                      ? 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 border-red-200/50 dark:border-red-900/30'
-                      : 'text-muted-foreground bg-muted/30 border-border/40'
+                      ? 'text-[#E05C5C] bg-[#FDECEA] dark:bg-[#3A1F1F] border-[#E05C5C]/20'
+                      : 'text-text-secondary dark:text-muted-foreground bg-surface-alt dark:bg-[#22302A] border-border/40'
                   }`}>
                     {overdue ? (
                       <><Bell className="w-3 h-3 animate-bounce" /> Overdue · {formatReminderDate(reminder.dateTime)}</>
@@ -213,8 +210,8 @@ const ReminderCard = forwardRef<HTMLDivElement, ReminderCardProps>(
                 {/* Repeat badge */}
                 {reminder.repeat !== 'once' && (
                   <span className="inline-flex items-center gap-1 text-[10px] font-bold
-                    text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40
-                    px-2.5 py-0.5 rounded-full border border-red-200/50 dark:border-red-900/40">
+                    text-[#E05C5C] bg-[#FDECEA] dark:bg-[#3A1F1F]
+                    px-2.5 py-0.5 rounded-full border border-[#E05C5C]/20">
                     <RefreshCcw className="w-2.5 h-2.5" />
                     {reminder.repeat === 'custom' && reminder.repeatRule
                       ? `${reminder.repeatRule.type === 'days' ? `Every ${reminder.repeatRule.interval} days` : reminder.repeatRule.type === 'weekdays' ? 'Weekdays' : 'Monthly'}`

@@ -19,51 +19,20 @@ if (!fs.existsSync(targetFile)) {
 try {
   let content = fs.readFileSync(targetFile, 'utf8');
 
-  // Check if already patched with escalation logic
-  if (content.includes('escalateInterval')) {
-    console.log('[Patch] TimedNotificationPublisher.java is already patched with custom sound and escalation.');
-    process.exit(0);
-  }
-
-  // If already patched with just custom sound, restore it first to allow clean patch
-  if (content.includes('com.adhivio.app.ReminderService')) {
-    console.log('[Patch] Old custom sound patch detected. Restoring original node_modules file first...');
-    // We can do a simple restore by re-installing or running npm install, but to be fast
-    // let's just replace the old patch back to the clean signature.
-    const oldPatchedSignature = `        NotificationStorage storage = new NotificationStorage(context);
-        JSObject notificationJson = storage.getSavedNotificationAsJSObject(Integer.toString(id));
-
-        // Play custom sound in background if configured
-        if (notificationJson != null) {
-            try {
-                org.json.JSONObject extra = notificationJson.optJSONObject("extra");
-                if (extra != null) {
-                    String sound = extra.optString("sound");
-                    String reminderId = extra.optString("reminderId");
-                    if ("custom".equals(sound) && reminderId != null && !reminderId.isEmpty()) {
-                        Intent serviceIntent = new Intent(context, Class.forName("com.adhivio.app.ReminderService"));
-                        serviceIntent.setAction("com.adhivio.app.PLAY_SOUND");
-                        serviceIntent.putExtra("soundKey", reminderId);
-                        serviceIntent.putExtra("volume", 0.7f);
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            context.startForegroundService(serviceIntent);
-                        } else {
-                            context.startService(serviceIntent);
-                        }
-                    }
-                }
-            } catch (Exception e) {
-                Logger.error("LN", "Failed to play custom sound in background", e);
-            }
-        }
-
-        LocalNotificationsPlugin.fireReceived(notificationJson);`;
-
-    const cleanSignature = `        NotificationStorage storage = new NotificationStorage(context);
+  // Let's restore the original clean signature if any patch is present, to allow fresh re-patch
+  const cleanSignature = `        NotificationStorage storage = new NotificationStorage(context);
         JSObject notificationJson = storage.getSavedNotificationAsJSObject(Integer.toString(id));
         LocalNotificationsPlugin.fireReceived(notificationJson);`;
 
-    content = content.replace(oldPatchedSignature, cleanSignature);
+  // Search for the start of the patched section and replace it back to clean signature
+  const patchStart = content.indexOf('NotificationStorage storage = new NotificationStorage(context);');
+  const patchEnd = content.indexOf('LocalNotificationsPlugin.fireReceived(notificationJson);');
+
+  if (patchStart >= 0 && patchEnd > patchStart && (content.includes('escalateInterval') || content.includes('ReminderService'))) {
+    console.log('[Patch] Found existing patch. Restoring original code first...');
+    const beforePatch = content.substring(0, patchStart);
+    const afterPatch = content.substring(patchEnd + 'LocalNotificationsPlugin.fireReceived(notificationJson);'.length);
+    content = beforePatch + cleanSignature + afterPatch;
   }
 
   const targetCode = `        NotificationStorage storage = new NotificationStorage(context);
@@ -73,18 +42,24 @@ try {
   const replacementCode = `        NotificationStorage storage = new NotificationStorage(context);
         JSObject notificationJson = storage.getSavedNotificationAsJSObject(Integer.toString(id));
 
-        // Play custom sound in background if configured
+        // Process background tasks/escalation natively without active foreground services
         if (notificationJson != null) {
             try {
                 org.json.JSONObject extra = notificationJson.optJSONObject("extra");
                 if (extra != null) {
-                    String sound = extra.optString("sound");
-                    String reminderId = extra.optString("reminderId");
-                    if ("custom".equals(sound) && reminderId != null && !reminderId.isEmpty()) {
-                        Intent serviceIntent = new Intent(context, Class.forName("com.adhivio.app.ReminderService"));
-                        serviceIntent.setAction("com.adhivio.app.PLAY_SOUND");
+                    // --- Custom background sound playback ---
+                    String sound = extra.optString("sound", "");
+                    String reminderId = extra.optString("reminderId", "");
+                    if ("custom".equals(sound) && !reminderId.isEmpty()) {
+                        Intent serviceIntent = new Intent(context, com.adhivio.app.ReminderService.class);
+                        serviceIntent.setAction(com.adhivio.app.ReminderService.ACTION_PLAY_SOUND);
                         serviceIntent.putExtra("soundKey", reminderId);
-                        serviceIntent.putExtra("volume", 0.7f);
+
+                        // Read native volume setting from shared preferences
+                        float volume = context.getSharedPreferences("adhivio_settings", Context.MODE_PRIVATE)
+                            .getFloat("volume", 0.7f);
+                        serviceIntent.putExtra("volume", volume);
+
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                             context.startForegroundService(serviceIntent);
                         } else {
@@ -113,7 +88,7 @@ try {
                     }
                 }
             } catch (Exception e) {
-                Logger.error("LN", "Failed to process custom sound or escalation in background", e);
+                Logger.error("LN", "Failed to process extra tasks in background", e);
             }
         }
 
@@ -127,7 +102,7 @@ try {
 
   content = content.replace(targetCode, replacementCode);
   fs.writeFileSync(targetFile, content, 'utf8');
-  console.log('[Patch] Successfully patched TimedNotificationPublisher.java to support custom background sounds and escalating alerts!');
+  console.log('[Patch] Successfully patched TimedNotificationPublisher.java to support escalating alerts natively!');
 } catch (err) {
   console.error(`[Patch] Failed to patch file: ${err.message}`);
   process.exit(1);
